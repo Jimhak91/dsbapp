@@ -1,0 +1,84 @@
+// Función para construir y mostrar la URL
+function updateUrl() {
+    const urlAplicaciones = `http://192.168.210.110:3005/operaciones/registros/${operation || ''}/${year || ''}/${month || ''}?deal=${deal || ''}`;
+    viewAplicaciones(urlAplicaciones,tbodyViewApp);
+}
+
+
+function handleSelectChange(e) {
+    const selectedValue = e.target.value;
+    // Verifica que el valor no sea undefined ni una cadena vacía
+    if (selectedValue !== undefined && selectedValue !== "") {
+        
+        // Asigna el valor correspondiente a la variable adecuada
+        switch (e.target.id) {
+            case 'dealSelect':
+                deal = selectedValue;
+                break;
+            case 'yearSelect':
+                year = selectedValue;
+                break;
+            case 'monthSelect':
+                month = selectedValue;
+                break;
+            case 'operationSelect':
+                operation = selectedValue;
+                break;
+        }
+        // Llama a la función para actualizar la URL
+        updateUrl();
+    }
+}
+
+function viewAplicaciones(url, table){
+    const dataFetch = fetchData(url);
+    
+    try {
+        // Intentamos leer los datos. Si la promesa aún está pendiente, suspenderá.
+        const data = dataFetch.read();
+        // Si la promesa fue exitosa, imprimimos los datos en la consola
+        console.log('Datos recibidos:', data);
+      } catch (promise) {
+        // Si se lanza una promesa (está en estado pendiente), esperamos a que se resuelva
+        if (promise instanceof Promise) {
+          promise.then(() => {
+            // Una vez que la promesa se resuelve, volvemos a intentar leer los datos
+            const data = dataFetch.read();
+                var body = ``; // Inicializamos una variable vacía para almacenar el contenido de las filas
+                for (let i = 0; i < data.length; i++) {    
+                    body += `
+                        <tr>
+                            <td>${data[i].razonSocial}</td>
+                            <td>${data[i].Grupo}</td>
+                            <td>${data[i].mesAplicado}</td>
+                            <td>${data[i].periodo} ${data[i].anualAplicado}</td>
+                            <td>$${data[i].totalEstimulo}</td>
+                                <td class="text-center align-middle">
+                                    <input value=${data[i].idAplicacion} name="aplicacion[${i}]" type="checkbox" class="form-check-input">
+                                </td>
+                        </tr>
+                    `;
+                }
+                table.innerHTML = body; // Insertamos todo el contenido de una vez
+            // document.querySelectorAll()
+            document.querySelectorAll('button.btn.btn-warning.aplicacion[data-bs-target="#modalEditRegistro"]').forEach(btn=>{
+              let idRegistro = btn.getAttribute('value');
+              btn.addEventListener('click',e => {
+                const form = document.getElementById('updateForm');
+                form.setAttribute('url', `http://192.168.210.110:3005/operaciones/registros/editar/${idRegistro}`);
+                let url = `http://192.168.210.110:3005/operaciones/registros/buscar/${idRegistro}/1/2024`
+                //http://localhost:3005/operaciones/registros/buscar/4/1/2024
+                let dataRegistro = fetchData(url);
+                loadDeal(dataRegistro); 
+              });
+            });
+            
+              
+          });
+        } else {
+          // Si hay un error, lo mostramos en la consola
+          console.error('Error al obtener los datos:', promise);
+        }
+      }
+
+}
