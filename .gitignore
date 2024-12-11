@@ -1,0 +1,8 @@
+# Ignorar la carpeta phpMyAdmin
+phpMyAdmin/
+
+# Ignorar la carpeta appserv
+appserv/
+
+# Ignorar el archivo dsb.zip
+dsb.zip
