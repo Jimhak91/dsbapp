@@ -23,22 +23,33 @@ if(isset($profile) && isset($email) && $profile === 1){?>
 <main class="container">
 <!-- =============================================================================================-->
 <div class="modal fade" id="ModalPagosPromotores" tabindex="1" aria-labelledby="ModalPagosPromotores" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="ModalPagosPromotores">Título del Modal</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Aquí se insertará dinámicamente el contenido generado por la función showModal -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary saveButton">Guardar</button>
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ModalPagosPromotoresTitle">Registrar Pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPagosPromotores">
+                        <div class="mb-3">
+                            <label for="montoPagado" class="form-label">Monto a Pagar</label>
+                            <input type="number" class="form-control" id="montoPagado" placeholder="Ingrese el monto a pagar" min="0" step="0.01" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pagoFaltante" class="form-label">Pago Faltante</label>
+                            <input type="text" class="form-control" id="pagoFaltante" readonly>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary saveButton">Guardar</button>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
 
 <div id="carouselExampleDark" class="carousel carousel-dark slide" data-bs-ride="false">
   <!-- Controles de navegación personalizados -->
@@ -344,7 +355,6 @@ if(isset($profile) && isset($email) && $profile === 1){?>
                                 <th scope="col">Nombre</th>
                                 <th scope="col">Monto Pagado</th>
                                 <th scope="col">Estado</th>
-                                <th scope="col">Comentarios</th>
                             </tr>
                         </thead>
                         <tbody id="tablaHistorialPagosPromotores">
