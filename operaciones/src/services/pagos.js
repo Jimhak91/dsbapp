@@ -8,7 +8,7 @@ import { addOptions } from "./hooks/functions/addOptionsToSelect.js";
 import { updateUrl } from "./hooks/functions/updateUrl.js";
 
 // URL BASE PARA LOS ENDPOINTS
-const urlBase = 'http://3.138.186.80:3005';
+const urlBase = 'http://192.168.210.110:3005';
 const urlPromotores = `${urlBase}/operaciones/promotores`;
 const selectPromotores = document.getElementById('selectPromotor');
 const checbox=document.querySelectorAll("form-check-input").forEach(input=>{
@@ -63,36 +63,88 @@ addOptions(selectPromotores, fetchData(urlPromotores), (click) => {
                     (btnClickedData) => {
                         const url = `${urlBase}/operaciones/pagos/promotor`;
                         const method = 'POST';
-                        const jsonData = {
-                            idAplicacion: btnClickedData.idRegistro,
-                            comentarios: "PAGO DE PRUEBA"
-                        };
-                        
-                         showModal(btnClickedData, btnClickedData.razonSocial, modalElement)
-                             .then(() =>
-                                 PostPay(jsonData, url, method)
-                                     .then(() => {
-                                         const updatedDataFetch = fetchData(urlPagosPromotores);
-                                         resolvePromise(updatedDataFetch)
-                                             .then(updatedData =>
-                                                 renderTable(
-                                                     headersPagosPromotores,
-                                                     updatedData,
-                                                     tbodyPagosPromotores,
-                                                     nodosPagosPromotores
-                                                 )
-                                             )
-                                             .catch(error => console.error('Error al obtener datos actualizados:', error));
-                                     })
-                                     .catch(error => console.error('Error en PostPay:', error))
-                             )
-                             .catch(error => console.error('Error en showModal:', error));
+
+                        showModal2(btnClickedData, modalElement)
+                            .then(jsonData => 
+                                PostPay(jsonData, url, method)
+                                    .then(() => {
+                                        const updatedDataFetch = fetchData(urlPagosPromotores);
+                                        resolvePromise(updatedDataFetch)
+                                            .then(updatedData =>
+                                                renderTable(
+                                                    headersPagosPromotores,
+                                                    updatedData,
+                                                    tbodyPagosPromotores,
+                                                    nodosPagosPromotores
+                                                )
+                                            )
+                                            .catch(error => console.error('Error al obtener datos actualizados:', error));
+                                    })
+                                    .catch(error => console.error('Error en PostPay:', error))
+                            )
+                            .catch(error => console.error('Error en showModal:', error));
                     }
                 )
             )
             .catch(error => console.error('Error al obtener datos:', error));
     }
 });
+
+// Función para mostrar el modal con un campo de entrada para el monto
+function showModal2(data, modalElement) {
+    return new Promise((resolve, reject) => {
+        // Generar contenido dinámico para el modal
+        const showModalBody = `
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">${data.razonSocial}</h5>
+                    <p class="card-text"><strong>ID Registro:</strong> ${data.idRegistro}</p>
+                    <p class="card-text"><strong>Promotor ID:</strong> ${data.Idpromotor}</p>
+                    <p class="card-text"><strong>Monto Total:</strong> ${data.montoTotal}</p>
+                    <p class="card-text"><strong>Estado:</strong> ${data.nombre}</p>
+                    <p class="card-text"><strong>Liberado:</strong> ${data.liberado ? 'Sí' : 'No'}</p>
+                    <p class="card-text"><small class="text-muted"><strong>Fecha de último cobro:</strong> ${new Date(data.fechaCobro).toLocaleDateString()}</small></p>
+                </div>
+                <div class="mb-3">
+                    <label for="montoPagadoInput" class="form-label">Monto a Pagar</label>
+                    <input type="number" class="form-control" id="montoPagadoInput" placeholder="Ingrese el monto a pagar" min="0" step="0.01" required>
+                </div>
+            </div>
+        `;
+
+        // Insertar contenido en el modal
+        const modalBody = modalElement.querySelector('.modal-body');
+        modalBody.innerHTML = showModalBody;
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+
+        // Resolver la promesa cuando el usuario haga clic en guardar
+        const saveButton = modalElement.querySelector('.saveButton');
+        saveButton.addEventListener(
+            'click',
+            () => {
+                const montoPagadoInput = modalElement.querySelector('#montoPagadoInput');
+                const montoPagado = parseFloat(montoPagadoInput.value);
+                
+                if (isNaN(montoPagado) || montoPagado <= 0) {
+                    alert('Por favor, ingrese un monto válido.');
+                    return;
+                }
+                
+                modal.hide();
+                resolve({
+                    idAplicacion: data.idRegistro,
+                    montoPagado,
+                    comentarios: "PAGO REGISTRADO DESDE MODAL"
+                });
+            },
+            { once: true } // Listener único
+        );
+    });
+}
+
 
 
 
@@ -180,7 +232,7 @@ btnhnc.addEventListener('click', async () => {
             Aplicacionespagadas: aplicacionesPagadas
         };
         console.log(jsonResultado)
-        const urlhnc = 'http://3.138.186.80:3005/operaciones/pagos/provedor';
+        const urlhnc = 'http://192.168.210.110:3005/operaciones/pagos/provedor';
         const method = 'POST';        
         PostPay(jsonResultado, urlhnc, method)
                             .then(() => {
@@ -231,7 +283,7 @@ function fetchAndRenderPagos() {
     }
 
     // Construir la URL con ambos parámetros
-    const url = `http://3.138.186.80:3005/operaciones/pagos/historial/mensuales?year=${ano}&month=${mes}`;
+    const url = `http://192.168.210.110:3005/operaciones/pagos/historial/mensuales?year=${ano}&month=${mes}`;
 
     console.log('URL generada:', url);
 
@@ -305,7 +357,7 @@ const cardHeader = document.querySelector('.card-header .row .col');
 async function fetchCuotaData() {
     try {
         // Realizar la solicitud GET al endpoint
-        const response = await fetch('http://3.138.186.80:3005/operaciones/pagos/historial/cuotas');
+        const response = await fetch('http://192.168.210.110:3005/operaciones/pagos/historial/cuotas');
         if (!response.ok) {
             throw new Error(`Error al obtener datos: ${response.statusText}`);
         }
@@ -368,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             // Realiza la solicitud PUT al backend
-            const response = await fetch('http://3.138.186.80:3005/operaciones/pagos/cuotas/1', {
+            const response = await fetch('http://192.168.210.110:3005/operaciones/pagos/cuotas/1', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -430,7 +482,7 @@ document.getElementById('hacerPagoForm').addEventListener('submit', async (event
 
     try {
         // Realizar la solicitud POST al backend
-        const response = await fetch('http://3.138.186.80:3005/operaciones/pagos/mensuales', {
+        const response = await fetch('http://192.168.210.110:3005/operaciones/pagos/mensuales', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -507,7 +559,7 @@ function addRowToPagosTable(pago) {
 //========================================================================
 //---------------------------------------------------
 // URL base del servidor
-const BASE_URL = 'http://3.138.186.80:3005/operaciones/pagos/historial/';
+const BASE_URL = 'http://192.168.210.110:3005/operaciones/pagos/historial/';
 
 // Generar años dinámicamente
 const añoSelectPromotores = document.getElementById('añoSelectPromotores');
@@ -574,7 +626,6 @@ async function actualizarTablaPromotores() {
                 <td>${pago.nombre}</td>
                 <td>${pago.montoPagado}</td>
                 <td>${pago.Status}</td>
-                <td>${pago.comentarios || 'N/A'}</td>
             </tr>
         `);
     });
@@ -652,7 +703,7 @@ function fetchAndRenderPagosByB() {
     }
 
     // Construir la URL con ambos parámetros
-    const url = `http://3.138.186.80:3005/operaciones/pagos/historial/mensuales?year=${ano}&month=${mes}`;
+    const url = `http://192.168.210.110:3005/operaciones/pagos/historial/mensuales?year=${ano}&month=${mes}`;
 
     console.log('URL generada:', url);
 
@@ -715,7 +766,7 @@ anoSelectByB.addEventListener('change', fetchAndRenderPagosByB);
 // Mensaje inicial
 fetchAndRenderPagosByB();
 
-const BASE_URL23 = 'http://3.138.186.80:3005/operaciones/pagos/historial/';
+const BASE_URL23 = 'http://192.168.210.110:3005/operaciones/pagos/historial/';
 async function fetchPagosHnC(year, month) {
     const url = `${BASE_URL}provedores?year=${year}&month=${month}`;
     try {
